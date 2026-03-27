@@ -159,4 +159,4 @@ python3 -m http.server 8080
 
 ## Lizenz
 
-Erstellt für akademische Zwecke — Technische Universität Dresden, Modellmesstechnik.
+Erstellt für akademische Zwecke - Andrei Zamshev, HSMW
