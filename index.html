@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920">
+<title>Akustische Messkette – Modellmesstechnik 1:20</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --d:#00d4ff;--a:#00e87b;--ac:#ff8a3d;--lp:#c050ff;
+  --tx:#dce0ec;--dm:#778;--bg:#060a14;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Space Grotesk',sans-serif;color:var(--tx)}
+#sc{width:1920px;height:1080px;position:relative;transform-origin:0 0;overflow:hidden;background:var(--bg)}
+#bg,#anim{position:absolute;top:0;left:0;width:1920px;height:1080px}
+#bg{z-index:0}#anim{z-index:3;pointer-events:none}
+
+.ttl{position:absolute;z-index:10;top:16px;left:50px}
+.ttl h1{font-size:30px;font-weight:700;letter-spacing:-.3px;color:#fff}
+.ttl p{font-size:15px;color:var(--dm);margin-top:3px;font-weight:300}
+
+.ctl{position:absolute;z-index:10;top:18px;right:50px;display:flex;gap:10px;align-items:center}
+.btn{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);color:var(--tx);font:14px 'Space Grotesk',sans-serif;padding:8px 18px;border-radius:8px;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:7px;user-select:none}
+.btn:hover{background:rgba(255,255,255,.06)}
+.btn.on{border-color:var(--d);color:var(--d);box-shadow:0 0 12px rgba(0,212,255,.1)}
+.btn svg{width:14px;height:14px;fill:currentColor}
+
+.nd{position:absolute;z-index:5;border-radius:14px;background:rgba(10,14,30,.82);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.06);cursor:default;transition:border-color .25s,box-shadow .25s;box-shadow:0 3px 18px rgba(0,0,0,.35)}
+.nd:hover{border-color:rgba(255,255,255,.14)!important}
+.nd.gd{border-color:var(--d);box-shadow:0 0 28px rgba(0,212,255,.16)}
+.nd.ga{border-color:var(--a);box-shadow:0 0 28px rgba(0,232,123,.16)}
+.nd.gc{border-color:var(--ac);box-shadow:0 0 28px rgba(255,138,61,.16)}
+.nd .ic{border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:600;font-family:'JetBrains Mono',monospace}
+.ic.cd{background:rgba(0,212,255,.08);color:var(--d)}
+.ic.ca{background:rgba(0,232,123,.08);color:var(--a)}
+.ic.cc{background:rgba(255,138,61,.08);color:var(--ac)}
+.nd .nm{font-weight:600;line-height:1.15}
+.nd .rl{color:var(--dm);font-weight:300;line-height:1.3}
+.nd .ix{position:absolute;top:7px;right:10px;font-size:11px;color:rgba(255,255,255,.1);font-weight:600;font-family:'JetBrains Mono',monospace}
+
+.siglbl{position:absolute;z-index:4;font-size:12px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;padding:3px 9px;border-radius:4px;pointer-events:none;white-space:nowrap}
+.siglbl.sd{color:var(--d);background:rgba(0,212,255,.06)}
+.siglbl.sa{color:var(--a);background:rgba(0,232,123,.06)}
+.siglbl.sc{color:var(--ac);background:rgba(255,138,61,.06)}
+
+.rowlbl{position:absolute;z-index:4;font-size:12px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.1);writing-mode:vertical-lr;text-orientation:mixed;pointer-events:none}
+
+.fb{position:absolute;z-index:6;background:rgba(10,15,32,.92);border:1px solid rgba(90,130,200,.12);border-radius:10px;padding:14px 18px;pointer-events:none;box-shadow:0 2px 18px rgba(0,0,0,.2)}
+.fb .ft{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:#5a6e90;margin-bottom:6px;font-family:'Space Grotesk',sans-serif;font-weight:600}
+.fb .katex{font-size:18px!important}
+
+.tp{position:absolute;z-index:20;width:320px;padding:18px 20px;background:rgba(8,12,28,.95);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.08);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);pointer-events:none;opacity:0;transform:translateY(4px);transition:.2s}
+.tp.on{opacity:1;transform:translateY(0)}
+.tp h3{font-size:18px;font-weight:600;margin-bottom:6px}
+.tp p{font-size:14px;line-height:1.5;color:var(--dm);font-weight:300}
+.tp .sp{font-family:'JetBrains Mono',monospace;font-size:12px;color:#6a7a9c;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.05);line-height:1.8}
+
+.lptag{position:absolute;z-index:4;font-size:13px;font-weight:500;color:var(--lp);background:rgba(192,80,255,.04);border:1px solid rgba(192,80,255,.1);padding:4px 12px;border-radius:5px;pointer-events:none}
+
+.lg{position:absolute;bottom:16px;left:50px;z-index:5;display:flex;gap:24px}
+.lg>div{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--dm)}
+.lg i{width:9px;height:9px;border-radius:50%;display:inline-block}
+
+.freq-box{position:absolute;z-index:5;pointer-events:none}
+.freq-box canvas{border-radius:8px;border:1px solid rgba(255,255,255,.03)}
+.freq-lbl{font-size:11px;color:#556;margin-top:4px;font-family:'JetBrains Mono',monospace}
+</style>
+</head>
+<body>
+<div id="sc">
+  <canvas id="bg" width="1920" height="1080"></canvas>
+  <canvas id="anim" width="1920" height="1080"></canvas>
+
+  <div class="ttl"><h1>Akustische Messkette — Modellmesstechnik 1:20</h1><p>Signalfluss zur Bestimmung der Raumimpulsantwort (RIR) · Kulturpalast Dresden</p></div>
+  <div class="ctl">
+    <button class="btn" id="sB">1×</button>
+    <button class="btn on" id="pB"><svg id="pI" viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg><span id="pL">Pause</span></button>
+    <button class="btn" id="rB">↺ Reset</button>
+  </div>
+
+  <div id="nodeLayer"></div>
+  <div id="lblLayer"></div>
+  <div id="fboxLayer"></div>
+  <div id="tp" class="tp"></div>
+
+  <div class="lg">
+    <div><i style="background:var(--d)"></i>Digital</div>
+    <div><i style="background:var(--a)"></i>Analog</div>
+    <div><i style="background:var(--ac)"></i>Akustisch</div>
+    <div><i style="background:var(--lp)"></i>Loopback</div>
+  </div>
+</div>
+
+<script>
+const W=1920,H=1080,sc=document.getElementById('sc');
+const fit=()=>sc.style.transform=`scale(${Math.min(innerWidth/W,innerHeight/H)})`;
+fit();addEventListener('resize',fit);
+
+const COL={d:'#00d4ff',a:'#00e87b',c:'#ff8a3d',l:'#c050ff'};
+const rgba=(h,o)=>`rgba(${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)},${o})`;
+
+/* ═══════════ LAYOUT ═══════════ */
+const R1_Y=90, R2_Y=390, R3_Y=695;
+const NW1=205, NH1=128, GAP1=26;
+const NW2_L=310, NW2_R=260, NH2=158, GAP2=250;
+const NW3=210, NH3=128, GAP3=32;
+
+const R1_TW=NW1*5+GAP1*4, R1_OX=Math.round((W-R1_TW)/2);
+const R2_TW=NW2_L+GAP2+NW2_R, R2_OX=Math.round((W-R2_TW)/2);
+const R3_TW=NW3*3+GAP3*2, R3_OX=Math.round((W-R3_TW)/2);
+
+/* ═══════════ DATA ═══════════ */
+const D=[
+  {n:'MATLAB',r:'Signalerzeugung',ic:'⟨/⟩',t:'d',row:1,
+   det:'Erzeugt logarithmischen Sinus-Sweep (ESS)',
+   sp:'fu = 559 Hz → fo = 126.491 Hz\nTw = 0,5 s · fs = 500 kHz\nLinearisierungsfilter optional\nStartverzögerung: 100 ms'},
+  {n:'NI-9262',r:'D/A-Wandler (DAC)',ic:'D→A',t:'d',row:1,
+   det:'Digital → Analog · Slot 3, cDAQ-9174',
+   sp:'Abtastrate: fs = 500 kHz\n16 Bit Auflösung (65.536 Stufen)\nNI cDAQ-9174 Chassis'},
+  {n:'BNC-T-Stück',r:'Signalsplitter',ic:'⑂',t:'a',row:1,
+   det:'Teilt Signal: Hauptpfad + Loopback-Referenz',
+   sp:'Pfad A → Verstärker (Hauptpfad)\nPfad B → NI-9222 ai3 (Loopback)\nPassives Bauteil'},
+  {n:'B&K 2706',r:'Leistungsverstärker',ic:'▲',t:'a',row:1,
+   det:'Verstärkt Signal für den Lautsprecher',
+   sp:'Filter: LIN (linear)\nBrüel & Kjær\nLeistungsverstärker'},
+  {n:'Mini-Dodekaeder',r:'Schallquelle 1:20',ic:'◉',t:'a',row:1,
+   det:'3D-Druck · omnidirektionale Abstrahlung',
+   sp:'Maßstab 1:20\n12-Flächen-Lautsprecher\nKugelcharakteristik\n3D-Druck-Gehäuse'},
+  {n:'Modellraum',r:'Akustisches Medium',ic:'⬡',t:'c',row:2,
+   det:'Schall durchläuft den Raum mit Reflexionen, Absorption und Streuung',
+   sp:'Kulturpalast Dresden 1:20\nReflexion · Absorption · Streuung\nLuftdämpfung im Ultraschall\n→ Raumimpulsantwort entsteht'},
+  {n:'GRAS 46DE',r:'⅛″ Druckmikrofon',ic:'⦿',t:'c',row:2,
+   det:'1/8-Zoll Mikrofon für den Ultraschallbereich',
+   sp:'Frequenz: 6,5 Hz – 140 kHz (±3 dB)\nKugelcharakteristik\nDruckmikrofon'},
+  {n:'B&K 1708',r:'Vorverstärker (ICP)',ic:'▲',t:'a',row:3,
+   det:'ICP/CCLD Vorverstärkung · Filter auf LIN',
+   sp:'ICP/CCLD Vorverstärkung\nFilter: LIN\nMax. Gain ohne Overload\nBrüel & Kjær'},
+  {n:'NI-9222',r:'A/D-Wandler (ADC)',ic:'A→D',t:'a',row:3,
+   det:'Analog → Digital · Slot 1, cDAQ-9174',
+   sp:'ai0: Mikrofonsignal\nai3: Loopback-Signal\nfs = 500 kHz\nNI cDAQ-9174 Chassis'},
+  {n:'MATLAB',r:'Signalverarbeitung',ic:'⟨/⟩',t:'d',row:3,
+   det:'Kreuzkorrelation → RIR · Nachhallzeitberechnung T60',
+   sp:'Zeitkorrektur via Loopback-Peak\nN_avg = 4 Mittelungen\nKreuzkorrelation → RIR\nSchröder-Integration → T60'}
+];
+
+const TC={d:COL.d,a:COL.a,c:COL.c};
+const CLS={d:'cd',a:'ca',c:'cc'};
+const GCLS={d:'gd',a:'ga',c:'gc'};
+
+const P=[];
+for(let i=0;i<5;i++){const x=R1_OX+i*(NW1+GAP1);P.push({x,y:R1_Y,w:NW1,h:NH1,cx:x+NW1/2,cy:R1_Y+NH1/2,bx:x+NW1,by:R1_Y+NH1})}
+P.push({x:R2_OX,y:R2_Y,w:NW2_L,h:NH2,cx:R2_OX+NW2_L/2,cy:R2_Y+NH2/2,bx:R2_OX+NW2_L,by:R2_Y+NH2});
+P.push({x:R2_OX+NW2_L+GAP2,y:R2_Y,w:NW2_R,h:NH2,cx:R2_OX+NW2_L+GAP2+NW2_R/2,cy:R2_Y+NH2/2,bx:R2_OX+NW2_L+GAP2+NW2_R,by:R2_Y+NH2});
+for(let i=0;i<3;i++){const x=R3_OX+i*(NW3+GAP3);P.push({x,y:R3_Y,w:NW3,h:NH3,cx:x+NW3/2,cy:R3_Y+NH3/2,bx:x+NW3,by:R3_Y+NH3})}
+
+/* ═══════════ BUILD NODES ═══════════ */
+const nL=document.getElementById('nodeLayer'),tp=document.getElementById('tp');
+const NS={1:{ic:36,nm:19,rl:13,pad:'16px 14px 12px'},2:{ic:42,nm:21,rl:14,pad:'20px 18px 14px'},3:{ic:36,nm:19,rl:13,pad:'16px 14px 12px'}};
+
+D.forEach((c,i)=>{
+  const p=P[i],s=NS[c.row];
+  const d=document.createElement('div');d.className='nd';
+  d.style.cssText=`left:${p.x}px;top:${p.y}px;width:${p.w}px;height:${p.h}px;padding:${s.pad}`;
+  d.innerHTML=`<div class="ix">${i+1}</div><div class="ic ${CLS[c.t]}" style="width:${s.ic}px;height:${s.ic}px;font-size:${s.ic*.42}px;margin-bottom:${s.ic*.2}px">${c.ic}</div><div class="nm" style="font-size:${s.nm}px">${c.n}</div><div class="rl" style="font-size:${s.rl}px">${c.r}</div>`;
+  d.onmouseenter=e=>{tp.innerHTML=`<h3 style="color:${TC[c.t]}">${c.n}</h3><p>${c.det}</p><div class="sp">${c.sp.replace(/\n/g,'<br>')}</div>`;tp.classList.add('on');mvTip(e)};
+  d.onmousemove=mvTip;d.onmouseleave=()=>tp.classList.remove('on');
+  nL.appendChild(d);
+});
+const nds=[...document.querySelectorAll('.nd')];
+function mvTip(e){const r=sc.getBoundingClientRect(),s=r.width/W;let x=(e.clientX-r.left)/s+16,y=(e.clientY-r.top)/s-8;if(x+330>W)x-=350;if(y+220>H)y-=240;if(y<8)y=8;tp.style.left=x+'px';tp.style.top=y+'px'}
+
+/* ═══════════ SIGNAL LABELS ═══════════ */
+const lL=document.getElementById('lblLayer');
+[{a:0,b:1,t:'d',n:'Digital'},{a:1,b:2,t:'a',n:'Analog'},{a:2,b:3,t:'a',n:'Analog'},{a:3,b:4,t:'a',n:'Analog'},
+ {a:7,b:8,t:'a',n:'Analog'},{a:8,b:9,t:'d',n:'Digital'}].forEach(s=>{
+  const mx=(P[s.a].bx+P[s.b].x)/2,my=P[s.a].y-2;
+  const d=document.createElement('div');d.className='siglbl s'+s.t[0];d.textContent=s.n;
+  d.style.cssText=`left:${mx}px;top:${my}px;transform:translateX(-50%)translateY(-100%)`;lL.appendChild(d);
+});
+
+function addVLabel(x,y,text,col){
+  const d=document.createElement('div');d.className='siglbl';d.textContent=text;
+  d.style.cssText=`left:${x}px;top:${y}px;transform:translateX(-50%);color:${col};background:${rgba(col,.06)};font-size:13px`;lL.appendChild(d);
+}
+addVLabel((P[4].cx+P[5].cx)/2,(P[4].by+P[5].y)/2-6,'Akustisch ↓',COL.c);
+addVLabel((P[6].cx+P[7].cx)/2,(P[6].by+P[7].y)/2-6,'Analog ↓',COL.a);
+
+const awLbl=document.createElement('div');awLbl.className='siglbl sc';awLbl.textContent='Akustisch';
+awLbl.style.cssText=`left:${(P[5].bx+P[6].x)/2}px;top:${P[5].y-2}px;transform:translateX(-50%)translateY(-100%)`;lL.appendChild(awLbl);
+
+[{x:R1_OX-42,y:R1_Y+10,t:'Signal-\nerzeugung'},{x:R2_OX-42,y:R2_Y+20,t:'Akustische\nÜbertragung'},{x:R3_OX-42,y:R3_Y+10,t:'Signal-\nerfassung'}].forEach(r=>{
+  const d=document.createElement('div');d.className='rowlbl';d.style.cssText=`left:${r.x}px;top:${r.y}px`;d.textContent=r.t;sc.appendChild(d);
+});
+
+const lpTag=document.createElement('div');lpTag.className='lptag';
+lpTag.innerHTML='⟵ LOOPBACK<br><span style="font-size:10px;opacity:.6">Referenz zur Zeitkorrektur</span>';
+lpTag.style.cssText=`right:52px;top:${(R1_Y+NH1+R3_Y)/2-10}px`;sc.appendChild(lpTag);
+
+/* ═══════════ KATEX FORMULAS ═══════════ */
+const FORMULAS=[
+  {x:60,y:R1_Y+NH1+12,w:480,t:'Sweep-Signal (ESS)',
+   tex:'s(t)=\\cos\\!\\left(\\frac{2\\pi f_u T_w}{\\ln(f_o/f_u)}\\left(e^{\\frac{t\\,\\ln(f_o/f_u)}{T_w}}-1\\right)\\right)'},
+  {x:R1_OX+3*(NW1+GAP1),y:R1_Y+NH1+12,w:400,t:'Nyquist-Theorem',
+   tex:'f_s = 500\\,\\text{kHz} > 2\\cdot f_o = 252{,}98\\,\\text{kHz}\\;\\checkmark'},
+  {x:60,y:R3_Y+NH3+16,w:420,t:'Kreuzkorrelation → RIR',
+   tex:'\\text{RIR}(\\tau)=\\int_{-\\infty}^{\\infty}\\!\\text{mic}(t)\\cdot\\text{loop}(t+\\tau)\\,dt'},
+  {x:540,y:R3_Y+NH3+16,w:310,t:'Nachhallzeit (Sabine)',
+   tex:'T_{60}=\\frac{0{,}161\\cdot V}{A_{\\text{eq}}}'}
+];
+const fL=document.getElementById('fboxLayer');
+FORMULAS.forEach(f=>{
+  const d=document.createElement('div');d.className='fb';
+  d.style.cssText=`left:${f.x}px;top:${f.y}px;max-width:${f.w}px`;
+  const title=document.createElement('div');title.className='ft';title.textContent=f.t;
+  const eq=document.createElement('div');eq.className='fe';
+  d.appendChild(title);d.appendChild(eq);fL.appendChild(d);
+  try{katex.render(f.tex,eq,{displayMode:true,throwOnError:false})}catch(e){eq.textContent=f.tex}
+});
+
+/* ═══════════ FREQUENCY-DOMAIN RESULT (1/3 Octave T60) ═══════════ */
+const fqC=document.createElement('canvas');fqC.width=540;fqC.height=130;
+const fqD=document.createElement('div');fqD.className='freq-box';
+fqD.style.cssText=`left:${W-600}px;top:${R3_Y+NH3+10}px`;
+const fqLbl=document.createElement('div');fqLbl.className='freq-lbl';
+fqLbl.textContent='Ergebnis: Nachhallzeit T₆₀ pro Terzband (Modellmaßstab → Realmaßstab)';
+fqD.appendChild(fqC);fqD.appendChild(fqLbl);sc.appendChild(fqD);
+const fqX=fqC.getContext('2d');
+
+const BANDS=['500','630','800','1k','1.25k','1.6k','2k','2.5k','3.15k','4k','5k','6.3k','8k','10k'];
+const BANDS_REAL=['25','31.5','40','50','63','80','100','125','160','200','250','315','400','500'];
+const T60_VALUES=[2.1,2.0,1.95,1.9,1.85,1.78,1.7,1.6,1.45,1.3,1.1,0.9,0.7,0.5];
+
+function drawFreqChart(t){
+  const cw=540,ch=130,pad={l:40,r:10,t:18,b:28};
+  const pw=cw-pad.l-pad.r, ph=ch-pad.t-pad.b;
+  fqX.clearRect(0,0,cw,ch);
+
+  fqX.strokeStyle='rgba(255,255,255,.04)';fqX.lineWidth=.5;
+  for(let i=0;i<=4;i++){const y=pad.t+ph*i/4;fqX.beginPath();fqX.moveTo(pad.l,y);fqX.lineTo(cw-pad.r,y);fqX.stroke()}
+
+  fqX.fillStyle='rgba(255,255,255,.08)';fqX.font='8px "JetBrains Mono"';fqX.textAlign='right';
+  ['2.0','1.5','1.0','0.5','0'].forEach((v,i)=>{fqX.fillText(v+'s',pad.l-4,pad.t+ph*i/4+3)});
+
+  const bw=pw/BANDS.length;
+  const maxT=2.2;
+  BANDS.forEach((_,i)=>{
+    const x=pad.l+i*bw;
+    const val=T60_VALUES[i]+Math.sin(t*.8+i*.5)*.04;
+    const h=Math.min(ph,(val/maxT)*ph);
+    const hue=200-i*10;
+    const pulse=.6+.4*Math.sin(t*1.2+i*.4);
+    fqX.fillStyle=`hsla(${hue},70%,55%,${.35+pulse*.15})`;
+    fqX.fillRect(x+2,pad.t+ph-h,bw-4,h);
+    fqX.fillStyle=`hsla(${hue},70%,70%,.15)`;
+    fqX.fillRect(x+2,pad.t+ph-h,bw-4,3);
+  });
+
+  fqX.fillStyle='rgba(255,255,255,.1)';fqX.font='7px "JetBrains Mono"';fqX.textAlign='center';
+  BANDS.forEach((b,i)=>{fqX.fillText(b,pad.l+i*bw+bw/2,ch-pad.b+10)});
+  fqX.fillStyle='rgba(255,255,255,.06)';fqX.font='6px "JetBrains Mono"';
+  BANDS_REAL.forEach((b,i)=>{fqX.fillText('('+b+')',pad.l+i*bw+bw/2,ch-pad.b+18)});
+
+  fqX.fillStyle='rgba(255,255,255,.06)';fqX.font='8px "JetBrains Mono"';fqX.textAlign='center';
+  fqX.fillText('Frequenz [Hz] · Modell (Real)',cw/2,ch-1);
+  fqX.textAlign='right';fqX.save();fqX.translate(10,ch/2);fqX.rotate(-Math.PI/2);
+  fqX.fillText('T₆₀ [s]',0,0);fqX.restore();fqX.textAlign='left';
+
+  fqX.fillStyle=rgba(COL.c,.15);fqX.font='9px "Space Grotesk"';
+  fqX.fillText('Nachhallzeit T₆₀ — Terzbandanalyse',pad.l,pad.t-5);
+}
+
+/* ═══════════ CANVAS BACKGROUND ═══════════ */
+const bgC=document.getElementById('bg').getContext('2d');
+const ctx=document.getElementById('anim').getContext('2d');
+
+(function drawBG(){
+  bgC.fillStyle='#060a14';bgC.fillRect(0,0,W,H);
+  [[400,300,600,.1,'0,18,60'],[1500,500,500,.07,'40,0,60'],[960,750,450,.05,'0,28,50'],[250,700,350,.04,'15,0,40']].forEach(([cx,cy,r,a,rgb])=>{
+    const g=bgC.createRadialGradient(cx,cy,0,cx,cy,r);g.addColorStop(0,`rgba(${rgb},${a})`);g.addColorStop(1,'transparent');bgC.fillStyle=g;bgC.fillRect(0,0,W,H)});
+  bgC.strokeStyle='rgba(255,255,255,.01)';bgC.lineWidth=.5;
+  for(let x=0;x<W;x+=60){bgC.beginPath();bgC.moveTo(x,0);bgC.lineTo(x,H);bgC.stroke()}
+  for(let y=0;y<H;y+=60){bgC.beginPath();bgC.moveTo(0,y);bgC.lineTo(W,y);bgC.stroke()}
+  [[R1_Y-15,NH1+30,'0,180,255'],[R2_Y-15,NH2+30,'255,138,61'],[R3_Y-15,NH3+30,'0,232,123']].forEach(([y,h,rgb])=>{
+    bgC.fillStyle=`rgba(${rgb},.012)`;bgC.fillRect(60,y,W-120,h);
+  });
+})();
+
+/* ═══════════ PATH SEGMENTS ═══════════ */
+const R1_SEGS=[];
+for(let i=0;i<4;i++) R1_SEGS.push({x1:P[i].bx,y1:P[i].cy,x2:P[i+1].x,y2:P[i+1].cy,c:i===0?COL.d:COL.a});
+
+const T12_pts=bezierPoints(P[4].cx,P[4].by+4,P[4].cx,P[4].by+60,P[5].cx,P[5].y-60,P[5].cx,P[5].y-4,40);
+const R2_SEG={x1:P[5].bx,y1:P[5].cy,x2:P[6].x,y2:P[6].cy,c:COL.c};
+const T23_pts=bezierPoints(P[6].cx,P[6].by+4,P[6].cx,P[6].by+60,P[7].cx,P[7].y-60,P[7].cx,P[7].y-4,40);
+
+const R3_SEGS=[];
+for(let i=7;i<9;i++) R3_SEGS.push({x1:P[i].bx,y1:P[i].cy,x2:P[i+1].x,y2:P[i+1].cy,c:i===8?COL.d:COL.a});
+
+const LP_X=W-72;
+const LP_pts=[...linePoints(P[2].bx+4,P[2].cy,LP_X,P[2].cy,15),...linePoints(LP_X,P[2].cy,LP_X,P[8].cy,25),...linePoints(LP_X,P[8].cy,P[8].bx+4,P[8].cy,15)];
+
+function bezierPoints(x1,y1,cx1,cy1,cx2,cy2,x2,y2,n){const pts=[];for(let i=0;i<=n;i++){const t=i/n,t2=t*t,t3=t2*t,mt=1-t,mt2=mt*mt,mt3=mt2*mt;pts.push({x:mt3*x1+3*mt2*t*cx1+3*mt*t2*cx2+t3*x2,y:mt3*y1+3*mt2*t*cy1+3*mt*t2*cy2+t3*y2})}return pts}
+function linePoints(x1,y1,x2,y2,n){const pts=[];for(let i=0;i<=n;i++){const t=i/n;pts.push({x:x1+(x2-x1)*t,y:y1+(y2-y1)*t})}return pts}
+function ptsToSegs(pts,col){const segs=[];for(let i=0;i<pts.length-1;i++)segs.push({x1:pts[i].x,y1:pts[i].y,x2:pts[i+1].x,y2:pts[i+1].y,c:col});return segs}
+
+const ALL_MAIN_SEGS=[...R1_SEGS,...ptsToSegs(T12_pts,COL.c),{x1:R2_SEG.x1,y1:R2_SEG.y1,x2:R2_SEG.x2,y2:R2_SEG.y2,c:COL.c},...ptsToSegs(T23_pts,COL.a),...R3_SEGS];
+const LOOP_SEGS=ptsToSegs(LP_pts,COL.l);
+
+/* ═══════════ DRAW STATIC ═══════════ */
+function drawStatic(){
+  ALL_MAIN_SEGS.forEach(s=>{ctx.save();ctx.shadowColor=rgba(s.c,.1);ctx.shadowBlur=5;ctx.strokeStyle=rgba(s.c,.22);ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(s.x1,s.y1);ctx.lineTo(s.x2,s.y2);ctx.stroke();ctx.restore()});
+
+  [[P[4].cx,P[5].y-4,COL.c],[P[6].cx,P[7].y-4,COL.a]].forEach(([x,y,c])=>{
+    ctx.fillStyle=rgba(c,.45);ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-7,y-12);ctx.lineTo(x+7,y-12);ctx.fill();
+    ctx.fillStyle=rgba(c,.08);ctx.beginPath();ctx.arc(x,y-6,14,0,6.283);ctx.fill();
+  });
+  R1_SEGS.concat(R3_SEGS).forEach(s=>{ctx.fillStyle=rgba(s.c,.3);ctx.beginPath();ctx.moveTo(s.x2,s.y2);ctx.lineTo(s.x2-7,s.y2-3.5);ctx.lineTo(s.x2-7,s.y2+3.5);ctx.fill()});
+  ctx.fillStyle=rgba(COL.c,.3);ctx.beginPath();ctx.moveTo(R2_SEG.x2,R2_SEG.y2);ctx.lineTo(R2_SEG.x2-7,R2_SEG.y2-3.5);ctx.lineTo(R2_SEG.x2-7,R2_SEG.y2+3.5);ctx.fill();
+
+  ctx.save();ctx.shadowColor=rgba(COL.l,.15);ctx.shadowBlur=8;ctx.strokeStyle=rgba(COL.l,.22);ctx.lineWidth=2.2;ctx.setLineDash([8,5]);
+  ctx.beginPath();LP_pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();ctx.setLineDash([]);ctx.restore();
+  for(let i=0;i<3;i++){const idx=Math.floor(LP_pts.length*(.25+i*.25));if(idx<LP_pts.length-1){const p=LP_pts[idx],p2=LP_pts[idx+1],a=Math.atan2(p2.y-p.y,p2.x-p.x);ctx.save();ctx.translate(p.x,p.y);ctx.rotate(a);ctx.fillStyle=rgba(COL.l,.2);ctx.beginPath();ctx.moveTo(5,0);ctx.lineTo(-4,-3.5);ctx.lineTo(-4,3.5);ctx.fill();ctx.restore()}}
+
+  const wsX=P[5].bx+8,weX=P[6].x-8,wcy=P[5].cy,wg=weX-wsX;
+  for(let i=0;i<6;i++){const r=18+i*20,to=(time*1.5+i*.5)%4,xo=to*wg*.22,al=Math.max(0,.2-i*.025)*(1-Math.min(1,xo/(wg*.9)));if(al<=0)continue;ctx.strokeStyle=rgba(COL.c,al);ctx.lineWidth=1.8;ctx.beginPath();ctx.arc(wsX+xo,wcy,r,-Math.PI*.35,Math.PI*.35);ctx.stroke()}
+  ctx.fillStyle=rgba(COL.c,.06);ctx.font='13px "Space Grotesk"';ctx.textAlign='center';ctx.fillText('🔊  Schallwellen  🔊',(wsX+weX)/2,wcy+NH2/2+20);ctx.textAlign='left';
+}
+
+/* ═══════════ PARTICLES ═══════════ */
+class Pt{
+  constructor(segs,lp,del){this.segs=segs;this.lp=lp;this.del=del;this.t=0;this.si=0;this.ok=true;this.sz=lp?2.2:3.2;this.tr=[];this.x=segs[0].x1;this.y=segs[0].y1}
+  step(dt){if(this.del>0){this.del-=dt;return}const sp=this.lp?500:240;const s=this.segs[this.si],l=Math.hypot(s.x2-s.x1,s.y2-s.y1)||1;this.t+=dt*sp/l;if(this.t>=1){this.t=0;this.si++;if(this.si>=this.segs.length){this.ok=false;return}}const cs=this.segs[this.si];this.x=cs.x1+(cs.x2-cs.x1)*this.t;this.y=cs.y1+(cs.y2-cs.y1)*this.t;this.tr.push({x:this.x,y:this.y});if(this.tr.length>32)this.tr.shift()}
+  draw(c){if(this.del>0||!this.ok)return;const col=this.lp?COL.l:this.segs[Math.min(this.si,this.segs.length-1)].c;const tl=this.tr.length;for(let i=0;i<tl;i++){const p=this.tr[i];c.beginPath();c.arc(p.x,p.y,this.sz*(i/tl)*.8,0,6.283);c.fillStyle=rgba(col,(i/tl)*.25);c.fill()}c.save();c.shadowColor=col;c.shadowBlur=12;c.beginPath();c.arc(this.x,this.y,this.sz,0,6.283);c.fillStyle=col;c.fill();c.restore();c.beginPath();c.arc(this.x,this.y,this.sz*2,0,6.283);c.fillStyle=rgba(col,.1);c.fill()}
+  near(){if(this.del>0||!this.ok)return -1;if(this.lp){if(this.si<3&&this.t<.15)return 2;if(this.si>LOOP_SEGS.length-5&&this.t>.8)return 8;return -1}for(let i=0;i<10;i++){const dx=this.x-P[i].cx,dy=this.y-P[i].cy;if(Math.abs(dx)<P[i].w*.6&&Math.abs(dy)<P[i].h*.6)return i}return -1}
+}
+
+let pts=[],playing=true,speed=1,time=0,spT=0,prev=0;
+const SI=2.0;
+const spM=(d=0)=>pts.push(new Pt(ALL_MAIN_SEGS,false,d));
+const spL=(d=0)=>pts.push(new Pt(LOOP_SEGS,true,d));
+for(let i=0;i<4;i++)spM(i*.45);spL(.5);spL(1.3);
+const gw=new Float64Array(10);
+
+const AMB=Array.from({length:30},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.12,vy:(Math.random()-.5)*.08,s:Math.random()*1+.3,a:Math.random()*.02+.005}));
+function drawAmb(){AMB.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;ctx.beginPath();ctx.arc(p.x,p.y,p.s,0,6.283);ctx.fillStyle=rgba('#4466aa',p.a);ctx.fill()})}
+
+function frame(ts){
+  if(!prev)prev=ts;let dt=(ts-prev)/1000*speed;prev=ts;if(!playing)dt=0;
+  time+=dt;spT+=dt;
+  if(spT>=SI){spT-=SI;spM();spL(.4)}
+  ctx.clearRect(0,0,W,H);drawAmb();drawStatic();
+  for(let i=0;i<10;i++)if(gw[i]>0)gw[i]=Math.max(0,gw[i]-dt);
+  pts.forEach(p=>{p.step(dt);p.draw(ctx);const ci=p.near();if(ci>=0&&ci<10)gw[ci]=.4});
+  pts=pts.filter(p=>p.ok);
+  nds.forEach((el,i)=>{el.classList.remove('gd','ga','gc');if(gw[i]>0)el.classList.add(GCLS[D[i].t])});
+  if(playing) drawFreqChart(time);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* ═══════════ CONTROLS ═══════════ */
+document.getElementById('pB').onclick=()=>{playing=!playing;document.getElementById('pL').textContent=playing?'Pause':'Play';document.getElementById('pI').innerHTML=playing?'<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>':'<path d="M8 5v14l11-7z"/>';document.getElementById('pB').classList.toggle('on',playing)};
+document.getElementById('sB').onclick=()=>{const s=[.5,1,2,3],i=(s.indexOf(speed)+1)%s.length;speed=s[i];document.getElementById('sB').textContent=speed+'×'};
+document.getElementById('rB').onclick=()=>{pts=[];time=0;spT=0;prev=0;gw.fill(0);for(let i=0;i<4;i++)spM(i*.4);spL(.5);if(!playing)document.getElementById('pB').click()};
+</script>
+</body>
+</html>
