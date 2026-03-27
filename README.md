@@ -2,7 +2,7 @@
 
 Interaktive Visualisierung der akustischen Messkette zur Bestimmung der Raumimpulsantwort (RIR) eines Modells des Dresdner Kulturpalasts im Maßstab 1:20.
 
-**[→ Live-Demo](https://andrejzamsev.github.io/messkette-visualisierung/)**
+**[→ Live-Demo](https://andreiac13.github.io/messkette-visualisierung/)**
 
 ---
 
